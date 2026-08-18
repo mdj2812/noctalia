@@ -1201,6 +1201,7 @@ if build_tests
     'widget_action',
     'widget_definition',
     'wallpaper_shuffle_state',
+    'wallpaper_theme_sync_paths',
     'workspace_alert_service',
   ]
 

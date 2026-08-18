@@ -661,6 +661,7 @@ void Application::initStyleThemeAndWayland() {
       );
     }
     syncGSettingsColorScheme(resolvedMode);
+    m_wallpaper.onResolvedThemeModeChanged(resolvedMode);
   });
   m_themeService.apply();
   syncGSettingsColorScheme(m_themeService.resolvedMode());

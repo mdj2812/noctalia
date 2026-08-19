@@ -27,9 +27,6 @@
 #include "wayland/wayland_seat.h"
 
 #include <algorithm>
-#include <cctype>
-#include <chrono>
-#include <filesystem>
 #include <chrono>
 #include <cmath>
 #include <filesystem>
@@ -485,8 +482,7 @@ void Wallpaper::reload() {
     const auto& themeSyncBefore = m_config->config().wallpaper.themeSync;
     seedThemeSyncBindingForCurrentMode();
     const auto& themeSyncAfter = m_config->config().wallpaper.themeSync;
-    if (themeSyncBefore.pathLight != themeSyncAfter.pathLight
-        || themeSyncBefore.pathDark != themeSyncAfter.pathDark) {
+    if (themeSyncBefore.pathLight != themeSyncAfter.pathLight || themeSyncBefore.pathDark != themeSyncAfter.pathDark) {
       return;
     }
   }
@@ -920,7 +916,9 @@ void Wallpaper::setAutomationGate(std::function<bool()> gate) { m_automationGate
 bool Wallpaper::automationAllowed() const noexcept { return !m_automationGate || m_automationGate(); }
 
 void Wallpaper::onResolvedThemeModeChanged(std::string_view mode) {
-  if (!m_initialized || m_config == nullptr || !m_config->config().wallpaper.enabled
+  if (!m_initialized
+      || m_config == nullptr
+      || !m_config->config().wallpaper.enabled
       || !m_config->config().wallpaper.themeSync.enabled) {
     return;
   }
@@ -971,7 +969,9 @@ void Wallpaper::applyThemeSync(std::string_view mode) {
   std::optional<std::string> defaultCandidate;
 
   for (const auto& output : outputs) {
-    if (!output.done || output.connectorName.empty() || !output.hasUsableGeometry()
+    if (!output.done
+        || output.connectorName.empty()
+        || !output.hasUsableGeometry()
         || !wallpaperOutputEnabled(wallpaperConfig, output)) {
       continue;
     }
@@ -1002,41 +1002,23 @@ void Wallpaper::applyThemeSync(std::string_view mode) {
 void Wallpaper::updateThemeSyncBindingForManualPick(
     const std::optional<std::string>& connector, const std::string& path
 ) {
-  if (m_config == nullptr || m_themeService == nullptr || path.empty()
-      || !m_config->config().wallpaper.themeSync.enabled) {
+  if (m_config == nullptr || m_themeService == nullptr || path.empty()) {
     return;
   }
 
-  const ThemeMode mode = m_themeService->isLightMode() ? ThemeMode::Light : ThemeMode::Dark;
   std::vector<std::string> connectors;
-  if (!connector.has_value() || connector->empty()) {
-    if (m_wayland != nullptr) {
-      for (const auto& out : m_wayland->outputs()) {
-        if (!out.connectorName.empty()) {
-          connectors.push_back(out.connectorName);
-        }
+  if (m_wayland != nullptr) {
+    for (const auto& out : m_wayland->outputs()) {
+      if (!out.connectorName.empty()) {
+        connectors.push_back(out.connectorName);
       }
     }
   }
-  wallpaper::setThemeSyncBinding(*m_config, connector, mode, path, connectors);
+  wallpaper::bindThemeSyncForManualPick(*m_config, connector, m_themeService->isLightMode(), path, connectors);
 }
 
 void Wallpaper::seedThemeSyncBindingForCurrentMode() {
   if (m_config == nullptr || m_themeService == nullptr) {
-    return;
-  }
-
-  const auto& themeSync = m_config->config().wallpaper.themeSync;
-  const bool isLight = m_themeService->isLightMode();
-  if (isLight && !themeSync.pathLight.empty()) {
-    return;
-  }
-  if (!isLight && !themeSync.pathDark.empty()) {
-    return;
-  }
-
-  const std::string path = m_config->getPaletteWallpaperPath();
-  if (path.empty()) {
     return;
   }
 
@@ -1049,8 +1031,8 @@ void Wallpaper::seedThemeSyncBindingForCurrentMode() {
     }
   }
 
-  wallpaper::setThemeSyncBinding(
-      *m_config, std::nullopt, isLight ? ThemeMode::Light : ThemeMode::Dark, path, connectors
+  wallpaper::seedThemeSyncBindingIfNeeded(
+      *m_config, m_themeService->isLightMode(), m_config->getPaletteWallpaperPath(), connectors
   );
 }
 

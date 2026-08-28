@@ -36,7 +36,8 @@ int main() {
   ok &= check(barShouldReserveExclusiveZone(alwaysOn, false, true), "always-on bar reserves when shown");
 
   auto autoHide = autoHideBar();
-  ok &= check(barShouldReserveExclusiveZone(autoHide, false, false), "auto-hide hidden still reserves space by default");
+  ok &=
+      check(barShouldReserveExclusiveZone(autoHide, false, false), "auto-hide hidden still reserves space by default");
   ok &= check(barShouldReserveExclusiveZone(autoHide, false, true), "auto-hide shown still reserves space by default");
   ok &= check(!barShouldReserveExclusiveZone(autoHide, true, true), "ipc hide releases reserve space");
 

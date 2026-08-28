@@ -1286,8 +1286,8 @@ if build_tests
     'window_switcher_membership',
     'window_switcher_shortcut_state',
     'workspace_alert_service',
-    'workspaces_widget',
     'workspace_visibility',
+    'workspaces_widget',
   ]
 
   foreach test_name : _cpp_test_names

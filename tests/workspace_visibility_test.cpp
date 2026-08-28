@@ -24,12 +24,8 @@ namespace {
   }
 
   std::string kwinRecord(
-      std::string_view uuid,
-      std::string_view appId,
-      std::string_view title,
-      std::string_view desktops = "1",
-      std::string_view output = "DP-1",
-      bool minimized = false
+      std::string_view uuid, std::string_view appId, std::string_view title, std::string_view desktops = "1",
+      std::string_view output = "DP-1", bool minimized = false
   ) {
     constexpr char kRecordSeparator = '\x1F';
     constexpr char kFieldSeparator = '\x1e';
@@ -60,8 +56,7 @@ int main() {
 
   ok &= check(
       compositors::activeWorkspaceHasVisibleWindows(
-          ws1,
-          {WorkspaceWindowAssignment{.windowId = "10", .workspaceKey = "1", .appId = "kitty", .title = "shell"}}
+          ws1, {WorkspaceWindowAssignment{.windowId = "10", .workspaceKey = "1", .appId = "kitty", .title = "shell"}}
       ),
       "visible window on active workspace counts"
   );
@@ -69,7 +64,8 @@ int main() {
       !compositors::activeWorkspaceHasVisibleWindows(
           ws1,
           {WorkspaceWindowAssignment{
-              .windowId = "10", .workspaceKey = "1", .appId = "kitty", .title = "shell", .minimized = true}}
+              .windowId = "10", .workspaceKey = "1", .appId = "kitty", .title = "shell", .minimized = true
+          }}
       ),
       "all minimized windows on active workspace do not count as visible"
   );
@@ -78,7 +74,8 @@ int main() {
           ws1,
           {
               WorkspaceWindowAssignment{
-                  .windowId = "10", .workspaceKey = "1", .appId = "kitty", .title = "shell", .minimized = true},
+                  .windowId = "10", .workspaceKey = "1", .appId = "kitty", .title = "shell", .minimized = true
+              },
               WorkspaceWindowAssignment{.windowId = "11", .workspaceKey = "1", .appId = "code", .title = "editor"},
           }
       ),
@@ -118,8 +115,7 @@ int main() {
 
   assignments = {WorkspaceWindowAssignment{.windowId = "99", .workspaceKey = "1", .appId = "code", .title = "editor"}};
   compositors::enrichAssignmentsWithMinimizedState(
-      assignments,
-      {WlrToplevelSnapshot{.title = "editor", .appId = "code", .minimized = true}}
+      assignments, {WlrToplevelSnapshot{.title = "editor", .appId = "code", .minimized = true}}
   );
   ok &= check(assignments[0].minimized, "enrichment marks minimized by app id and title");
 
@@ -134,8 +130,15 @@ int main() {
   ok &= check(parsed[0].desktopIds == std::vector<std::string>{"1"}, "kwin payload parses desktop ids");
 
   constexpr char kFieldSeparator = '\x1e';
-  const std::string legacyPayload = std::string("44") + kFieldSeparator + "kitty" + kFieldSeparator + "legacy"
-      + kFieldSeparator + "1" + kFieldSeparator + "DP-1";
+  const std::string legacyPayload = std::string("44")
+      + kFieldSeparator
+      + "kitty"
+      + kFieldSeparator
+      + "legacy"
+      + kFieldSeparator
+      + "1"
+      + kFieldSeparator
+      + "DP-1";
   const auto legacyParsed = compositors::kde::parseWindowListPayload(legacyPayload);
   ok &= check(legacyParsed.size() == 1, "legacy payload without minimized field still parses");
   ok &= check(!legacyParsed[0].minimized, "legacy payload defaults minimized to false");

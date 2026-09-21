@@ -15,13 +15,15 @@ fail() {
 
 work_dir=$(mktemp -d)
 # ghostty/reload.sh hands the pgrep result to bash's `kill` builtin, which no PATH stub
-# can intercept, so the stub must name a process this test owns. It ignores SIGUSR2: a
-# hardcoded pid used to hit whatever unrelated process owned it, and in CI that was
-# another test's binary, which died from SIGUSR2.
-bash -c 'trap "" USR2; exec sleep 300' &
+# can intercept, so the stub must name a process this test owns. Ignore SIGUSR2 before
+# forking so the child cannot receive it before installing a handler.
+trap '' USR2
+sleep 300 &
 signal_target=$!
+trap - USR2
 cleanup() {
-  kill "$signal_target" 2>/dev/null
+  kill "$signal_target" 2>/dev/null || true
+  wait "$signal_target" 2>/dev/null || true
   rm -rf "$work_dir"
 }
 trap cleanup EXIT
